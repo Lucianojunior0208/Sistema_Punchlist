@@ -1,0 +1,99 @@
+:root {
+  --flanje-blue: #0d6efd;
+  --flanje-blue-light: #cfe2ff;
+  --bg-start: #e8f1ff;
+  --bg-end: #ffffff;
+}
+
+body {
+  background: linear-gradient(180deg, var(--bg-start), var(--bg-end));
+  padding-top: 64px;
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+}
+
+.navbar {
+  background-color: var(--flanje-blue-light) !important;
+  box-shadow: 0 2px 6px rgba(13, 110, 253, 0.06);
+}
+
+.navbar-brand {
+  color: var(--flanje-blue) !important;
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.card {
+  border: none;
+  border-radius: 12px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.card .card-body {
+  padding: 1.5rem;
+}
+
+.card-title {
+  color: var(--flanje-blue);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.btn-primary {
+  background-color: var(--flanje-blue);
+  border-color: var(--flanje-blue);
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #5390f5;
+  border-color: #5390f5;
+}
+
+#loginAlert {
+  margin-bottom: 0.5rem;
+}
+
+#preloader {
+  position: fixed;
+  inset: 0;
+  background-color: var(--flanje-blue-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+#preloader.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#preloader .spinner {
+  width: 64px;
+  height: 64px;
+  border: 6px solid rgba(13, 110, 253, 0.15);
+  border-top-color: var(--flanje-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+#preloader p {
+  margin-top: 12px;
+  font-weight: 600;
+  color: var(--flanje-blue);
+}
