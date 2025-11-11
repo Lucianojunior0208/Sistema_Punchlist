@@ -109,8 +109,8 @@ form.addEventListener('submit', (e) => {
         doc.text(`Matrícula: ${matricula.value}`, margin, y); y += 8;
         doc.text(`Obra: ${obra.value}`, margin, y); y += 8;
         doc.text(`Projeto: ${projeto.value}`, margin, y); y += 8;
-        doc.text(`Data da verificação: ${linha.value}`, margin, y); y += 8;
-        doc.text(`Número da Junta: ${junta.value}`, margin, y); y += 8;
+        doc.text(`Nome da pasta: ${linha.value}`, margin, y); y += 8;
+        doc.text(`Data da Verificação: ${junta.value}`, margin, y); y += 8;
         if (observacao.value.trim()) {
             // quebra simples em múltiplas linhas se necessário
             const obsLines = doc.splitTextToSize(`Observação: ${observacao.value.trim()}`, doc.internal.pageSize.getWidth() - 2 * margin);
