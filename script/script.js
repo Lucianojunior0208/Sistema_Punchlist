@@ -1,158 +1,96 @@
-// script.js - controla foto, validação, geração PDF e logout
+// ========== PRELOADER ==========
+window.addEventListener("load", () => {
+  const preloader = document.getElementById("preloader");
+  if (preloader) {
+    preloader.style.transition = "opacity 0.5s";
+    preloader.style.opacity = "0";
+    setTimeout(() => preloader.style.display = "none", 500);
+  }
+});
 
-// Elementos
-const btnCadastrar = document.getElementById('btnCadastrar');
-const inputCamera = document.getElementById('inputCamera');
-const fotoPreview = document.getElementById('fotoPreview');
+// ========== REDIRECIONAMENTO LOGIN ==========
+window.addEventListener("DOMContentLoaded", () => {
+  const loggedIn = localStorage.getItem("user_id");
+  if (!loggedIn) {
+    window.location.href = "login.html";
+  }
+});
 
-const matricula = document.getElementById('matricula');
-const obra = document.getElementById('obra');
-const projeto = document.getElementById('projeto');
-const linha = document.getElementById('linha');
-const junta = document.getElementById('junta');
-const observacao = document.getElementById('observacao');
-const nomeArquivo = document.getElementById('nomeArquivo');
+// ========== CAPTURA DE FOTOS ==========
+const btnCadastrar = document.getElementById("btnCadastrar");
+const inputCamera = document.getElementById("inputCamera");
+const fotoBox = document.getElementById("fotoBox");
 
-const form = document.getElementById('formCadastro');
-const btnGerar = document.getElementById('btnGerar');
+let fotos = [];
 
-const alertMsg = document.getElementById('alertMsg');
-const successMsg = document.getElementById('successMsg');
-const pdfPreviewContainer = document.getElementById('pdfPreviewContainer');
-const pdfPreview = document.getElementById('pdfPreview');
+btnCadastrar.addEventListener("click", () => {
+  if (fotos.length >= 5) {
+    alert("Você pode adicionar até 5 fotos apenas!");
+    return;
+  }
+  inputCamera.click();
+});
 
-const logoutBtn = document.getElementById('logoutBtn');
-
-let fotoBase64 = null;
-
-// Preenche matrícula com user_id salvo (se existir)
-document.addEventListener('DOMContentLoaded', () => {
-    const userId = localStorage.getItem('user_id');
-    if (userId && matricula) {
-        matricula.value = userId;
+inputCamera.addEventListener("change", (e) => {
+  const arquivos = Array.from(e.target.files);
+  arquivos.forEach((arquivo) => {
+    if (fotos.length < 5) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        fotos.push(event.target.result);
+        const img = document.createElement("img");
+        img.src = event.target.result;
+        fotoBox.appendChild(img);
+      };
+      reader.readAsDataURL(arquivo);
     }
-    // Atualiza estado do botão gerar (caso já haja valores)
-    checkRequiredFields();
+  });
 });
 
-// ----- Foto: abrir input e mostrar miniatura -----
-btnCadastrar.addEventListener('click', () => inputCamera.click());
+// ========== GERAR PDF ==========
+document.getElementById("btnEnviar").addEventListener("click", async () => {
+  const { jsPDF } = window.jspdf;
 
-inputCamera.addEventListener('change', (ev) => {
-    const file = ev.target.files && ev.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        fotoBase64 = e.target.result;
-        fotoPreview.src = fotoBase64;
-        fotoPreview.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-});
+  const matricula = document.getElementById("matricula").value.trim();
+  const obra = document.getElementById("obra").value.trim();
+  const projeto = document.getElementById("projeto").value.trim();
+  const linha = document.getElementById("linha").value.trim();
+  const junta = document.getElementById("junta").value.trim();
+  const observacao = document.getElementById("observacao").value.trim();
 
-// Atualiza nomeArquivo automaticamente baseado em "linha"
-linha.addEventListener('input', () => {
-    nomeArquivo.value = linha.value.trim() ? `${linha.value.trim()}.pdf` : '';
-    checkRequiredFields();
-});
+  if (!matricula || !obra || !projeto || !linha || !junta) {
+    alert("Preencha todos os campos obrigatórios antes de gerar o PDF.");
+    return;
+  }
 
-// Verifica obrigatórios e habilita/desabilita botão Gerar
-function checkRequiredFields() {
-    const ok = matricula.value.trim() &&
-        obra.value.trim() &&
-        projeto.value.trim() &&
-        linha.value.trim() &&
-        junta.value.trim();
-    btnGerar.disabled = !ok;
-}
+  const doc = new jsPDF();
 
-// ligar inputs para checar dinamicamente
-[matricula, obra, projeto, linha, junta].forEach(el => {
-    if (el) el.addEventListener('input', checkRequiredFields);
-});
+  doc.setFontSize(16);
+  doc.text("Relatório de Flange", 20, 20);
+  doc.setFontSize(12);
+  doc.text(`Matrícula: ${matricula}`, 20, 40);
+  doc.text(`Obra: ${obra}`, 20, 50);
+  doc.text(`Projeto: ${projeto}`, 20, 60);
+  doc.text(`Número da Linha: ${linha}`, 20, 70);
+  doc.text(`Número da Junta: ${junta}`, 20, 80);
+  if (observacao) doc.text(`Observação: ${observacao}`, 20, 90);
 
-// Logout: limpa localStorage e redireciona para login
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('user_id');
-        localStorage.removeItem('user_name');
-        sessionStorage.removeItem('usuarioLogado');
-        window.location.replace('login.html');
+  if (fotos.length > 0) {
+    doc.addPage();
+    doc.text("Fotos do Registro", 20, 20);
+
+    let x = 15, y = 30;
+    const imgSize = 60;
+    fotos.forEach((foto, index) => {
+      doc.addImage(foto, "JPEG", x, y, imgSize, imgSize);
+      x += imgSize + 10;
+      if ((index + 1) % 3 === 0) {
+        x = 15;
+        y += imgSize + 10;
+      }
     });
-}
+  }
 
-// ----- Validação e geração do PDF (A4, consistente) -----
-form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    alertMsg.style.display = 'none';
-    successMsg.style.display = 'none';
-
-    // valida obrigatórios (observação é opcional)
-    if (!matricula.value.trim() || !obra.value.trim() || !projeto.value.trim() || !linha.value.trim() || !junta.value.trim()) {
-        alertMsg.textContent = '⚠️ Preencha todos os campos obrigatórios (Matrícula, Obra, Projeto, Linha, Junta).';
-        alertMsg.style.display = 'block';
-        return;
-    }
-
-    try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
-        const margin = 20;
-        let y = margin;
-
-        doc.setFontSize(16);
-        doc.text('Relatório - Punchlist', margin, y);
-        y += 12;
-
-        doc.setFontSize(12);
-        doc.text(`Matrícula: ${matricula.value}`, margin, y); y += 8;
-        doc.text(`Obra: ${obra.value}`, margin, y); y += 8;
-        doc.text(`Projeto: ${projeto.value}`, margin, y); y += 8;
-        doc.text(`Nome da pasta: ${linha.value}`, margin, y); y += 8;
-        doc.text(`Data da Verificação: ${junta.value}`, margin, y); y += 8;
-        if (observacao.value.trim()) {
-            // quebra simples em múltiplas linhas se necessário
-            const obsLines = doc.splitTextToSize(`Observação: ${observacao.value.trim()}`, doc.internal.pageSize.getWidth() - 2 * margin);
-            doc.text(obsLines, margin, y);
-            y += obsLines.length * 6;
-        } else {
-            doc.text('Observação: (Nenhuma)', margin, y); y += 8;
-        }
-
-        // Se houver foto, adiciona proporcionalmente
-        if (fotoBase64) {
-            const imgProps = doc.getImageProperties(fotoBase64);
-            const pdfW = doc.internal.pageSize.getWidth() - 2 * margin;
-            const imgH = (imgProps.height * pdfW) / imgProps.width;
-            doc.addImage(fotoBase64, 'PNG', margin, y, pdfW, imgH);
-            y += imgH + 8;
-        }
-
-        // Nome do arquivo baseado na linha
-        const arquivoNome = nomeArquivo.value.trim() || `${linha.value.trim() || 'relatorio'}.pdf`;
-
-        // Salva PDF (download automático)
-        doc.save(arquivoNome);
-
-        // Cria blob para preview no iframe
-        const blob = doc.output('blob');
-        const url = URL.createObjectURL(blob);
-        pdfPreview.src = url;
-        pdfPreviewContainer.style.display = 'block';
-
-        successMsg.textContent = '✅ PDF gerado e exibido corretamente!';
-        successMsg.style.display = 'block';
-
-        // limpa campos (mantém user_id no localStorage)
-        form.reset();
-        fotoBase64 = null;
-        fotoPreview.style.display = 'none';
-        nomeArquivo.value = '';
-        btnGerar.disabled = true;
-    } catch (err) {
-        console.error(err);
-        alertMsg.textContent = 'Erro ao gerar PDF. Veja console para mais detalhes.';
-        alertMsg.style.display = 'block';
-    }
+  const fileName = `Relatorio_${linha}.pdf`;
+  doc.save(fileName);
 });

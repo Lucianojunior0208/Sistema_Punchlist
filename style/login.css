@@ -12,6 +12,7 @@ body {
   margin: 0;
 }
 
+/* Navbar */
 .navbar {
   background-color: var(--flanje-blue-light) !important;
   box-shadow: 0 2px 6px rgba(13, 110, 253, 0.06);
@@ -23,11 +24,20 @@ body {
   font-size: 1.3rem;
 }
 
+/* Card login */
 .card {
   border: none;
   border-radius: 12px;
   max-width: 420px;
   width: 100%;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.5s ease;
+}
+
+.card.fade-in {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .card .card-body {
@@ -53,10 +63,12 @@ body {
   border-color: #5390f5;
 }
 
+/* Alert */
 #loginAlert {
   margin-bottom: 0.5rem;
 }
 
+/* Preloader */
 #preloader {
   position: fixed;
   inset: 0;
@@ -96,4 +108,17 @@ body {
   margin-top: 12px;
   font-weight: 600;
   color: var(--flanje-blue);
+}
+
+/* Responsividade */
+@media (max-width: 576px) {
+  #preloader .spinner {
+    width: 52px;
+    height: 52px;
+    border-width: 5px;
+  }
+
+  body {
+    padding-top: 56px;
+  }
 }
