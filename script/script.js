@@ -94,3 +94,12 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
   const fileName = `Relatorio_${linha}.pdf`;
   doc.save(fileName);
 });
+
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_name');
+    sessionStorage.removeItem('usuarioLogado');
+    window.location.replace('login.html');
+  });
+}
